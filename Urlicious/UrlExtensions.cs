@@ -10,33 +10,6 @@ namespace Urlicious
     public static class UrlExtensions
     {
         /// <summary>
-        /// Adds the specified parameter and value to this URL.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="key">The key.</param>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static Url AddParam(this Url url, string key, object value)
-        {
-            EnsureValidUrl(url);
-
-            return url.AppendParameter(key, value);
-        }
-
-        /// <summary>
-        /// Adds the specified sub-path to this URL.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="path">The path.</param>
-        /// <returns></returns>
-        public static Url AddPath(this Url url, string path)
-        {
-            EnsureValidUrl(url);
-
-            return url.AppendPath(path);
-        }
-
-        /// <summary>
         /// Appends the specified collection of paths to the URL.
         /// </summary>
         /// <param name="url">The URL.</param>
@@ -69,6 +42,17 @@ namespace Urlicious
                 throw new ArgumentException("paths");
 
             return url.AppendPaths(paths.ToList());
+        }
+
+        /// <summary>
+        /// Determines whether the specified Url instance is a well-formed, absolute Uri.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns></returns>
+        public static bool IsWellFormed(this Url url)
+        {
+            // Our URL should always be absolute, as it entails the "AbsolutePath" to our resource.
+            return Uri.IsWellFormedUriString(url, UriKind.Absolute);
         }
 
         private static void EnsureValidUrl(Url url)
