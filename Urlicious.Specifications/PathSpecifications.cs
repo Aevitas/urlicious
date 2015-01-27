@@ -39,4 +39,27 @@ namespace Urlicious.Specifications
             }
         };
     }
+
+    [Subject(typeof(Url))]
+    public class ErroreousPathSpecifications
+    {
+        private static Url _url;
+
+        Establish context = () =>
+        {
+            _url = new Url(Constants.BaseUrl);
+        };
+
+        Because we_try_to_mess_stuff_up = () =>
+        {
+            _url.AppendPath("/////////////");
+            _url.AppendPath("//d////");
+            _url.AppendPath("/e$//");
+        };
+
+        It should_still_produce_valid_output = () =>
+        {
+            _url.ToString().ShouldEqual(string.Format("{0}/{1}/{2}", Constants.BaseUrl, "d", "e$"));
+        };
+    }
 }

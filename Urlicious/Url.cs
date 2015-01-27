@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Urlicious
 {
@@ -55,11 +56,13 @@ namespace Urlicious
         /// Appends the specified path to the URL, taking into account slashes.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <exception cref="System.ArgumentException">path</exception>
+        /// <returns></returns>
         public Url AppendPath(string path)
         {
+            // PERF ISSUE:    This method is likely to be more efficient when using StringBuilder.
+            
             if (string.IsNullOrWhiteSpace(path))
-                throw new ArgumentException("path");
+                return this;
 
             // Ensure the path ends with a slash.
             if (!AbsolutePath.EndsWith("/"))
@@ -116,7 +119,7 @@ namespace Urlicious
         public T GetQueryValue<T>(string key, Func<object, T> retriever = null)
         {
             if (!Queries.ContainsKey(key))
-                throw new InvalidOperationException(string.Format("Can not obtain value for key {0}; it isn't registered for this URL."));
+                throw new InvalidOperationException(string.Format("Can not obtain value for key {0}; it isn't registered for this URL.", key));
 
             var entry = Queries[key];
 
@@ -129,12 +132,15 @@ namespace Urlicious
         /// <returns></returns>
         public IEnumerable<string> GetPaths()
         {
-            var path = AbsolutePath.Remove(0, RootUrl.Length);
+            var sb = new StringBuilder(AbsolutePath);
 
-            path = path.Remove(path.Length - QueryString.Length, QueryString.Length);
-            path = path.TrimStart('/').TrimEnd('/');
+            sb.Remove(0, RootUrl.Length);
+            sb.Remove(sb.Length - QueryString.Length, QueryString.Length);
 
-            return path.Split('/');
+            sb.TrimStart('/');
+            sb.TrimEnd('/');
+
+            return sb.ToString().Split('/');
         }
 
         /// <summary>
@@ -168,10 +174,13 @@ namespace Urlicious
 
             var uri = new Uri(url);
 
-            // PERF:    The includeTrailingSlash is implemented poorly here - as string is immutable, a new string will be alloc'd regardless
-            //          of whether or not we actually want to include the trailing slash. Should probably be optimized (depending on how the JIT handles it).
-            return uri.GetComponents(
-                UriComponents.SchemeAndServer | UriComponents.UserInfo, UriFormat.Unescaped) + (includeTrailingSlash ? "/" : string.Empty);
+            var ret = uri.GetComponents(
+                UriComponents.SchemeAndServer | UriComponents.UserInfo, UriFormat.Unescaped);
+
+            if (includeTrailingSlash)
+                ret += "/";
+
+            return ret;
         }
 
         /// <summary>
@@ -193,24 +202,43 @@ namespace Urlicious
         /// </returns>
         public override string ToString()
         {
-            var url = AbsolutePath;
+            var url = new StringBuilder(AbsolutePath);
 
             // No params? Cool, we're done!
             if (Queries.Count <= 0)
-                return url;
+                return url.ToString();
 
-            if (url.EndsWith("/"))
-                url = url.TrimEnd('/');
+            if (url.Length > 0 && url[url.Length - 1] == '/')
+                url.Length--;
 
-            url += "?";
-            url += QueryString;
+            url.Append("?");
+            url.Append(QueryString);
 
-            return url;
+            return url.ToString();
         }
 
         private string ProcessQuery(string what)
         {
             return EncodeParameters ? Utilities.UrlEncode(what) : what;
+        }
+
+        private string QueryString
+        {
+            get
+            {
+                var url = new StringBuilder();
+                var param = Queries.ToList();
+                for (int i = 0; i < Queries.Count; i++)
+                {
+                    var p = param[i];
+                    url.Append(string.Format("{0}={1}", p.Key, ProcessQuery(p.Value.ToString())));
+
+                    if (i < param.Count - 1)
+                        url.Append("&");
+                }
+
+                return url.ToString();
+            }
         }
 
         #region Implicit Operators
@@ -240,6 +268,8 @@ namespace Urlicious
         }
 
         #endregion
+
+        #region Parse
 
         /// <summary>
         /// Parses the specified URL.
@@ -291,23 +321,6 @@ namespace Urlicious
             instance.AbsolutePath = instance.AbsolutePath.Split('?')[0];
         }
 
-        private string QueryString
-        {
-            get
-            {
-                var url = string.Empty;
-                var param = Queries.ToList();
-                for (int i = 0; i < Queries.Count; i++)
-                {
-                    var p = param[i];
-                    url += string.Format("{0}={1}", p.Key, ProcessQuery(p.Value.ToString()));
-
-                    if (i < param.Count - 1)
-                        url += "&";
-                }
-
-                return url;
-            }
-        }
+        #endregion
     }
 }
