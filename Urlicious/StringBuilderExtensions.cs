@@ -70,9 +70,12 @@ namespace Urlicious
             if (!IsValidStringBuilder(sb))
                 return false;
 
-            for (int i = sb.Length - 1; i > sb.Length - value.Length; i--)
+            if (value.Length > sb.Length)
+                return false;
+
+            for (int i = sb.Length - 1, j = value.Length - 1; i >= 0 && j >= 0; i--, j--)
             {
-                if (sb[i] != value[i])
+                if (value[j] != sb[i])
                     return false;
             }
 

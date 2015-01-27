@@ -57,6 +57,7 @@
     <Compile Include="ResetSpecification.cs" />
     <Compile Include="BasicSpecifications.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StringBuilderExtensionsSpecifications.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

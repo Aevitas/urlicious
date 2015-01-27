@@ -64,12 +64,15 @@ namespace Urlicious
             if (string.IsNullOrWhiteSpace(path))
                 return this;
 
-            // Ensure the path ends with a slash.
-            if (!AbsolutePath.EndsWith("/"))
-                AbsolutePath += "/";
+            var sb = new StringBuilder(AbsolutePath);
 
-            // .. and the part we're appending doesn't.
-            AbsolutePath += path.TrimStart('/').TrimEnd('/');
+            if (!sb.EndsWith("/"))
+                sb.Append("/");
+
+            var p = new StringBuilder(path);
+            p.TrimStart('/').TrimEnd('/');
+
+            AbsolutePath = sb.Append(p).ToString();
 
             return this;
         }
