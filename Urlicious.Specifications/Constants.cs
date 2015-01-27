@@ -2,6 +2,6 @@
 {
     public static class Constants
     {
-        public const string BaseUrl = "http://google.com/";
+        public const string BaseUrl = "http://google.com";
     }
 }

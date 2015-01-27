@@ -90,6 +90,18 @@ namespace Urlicious
         }
 
         /// <summary>
+        /// Removes the query with the specified key from the URL query collection.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        public void RemoveQuery(string key)
+        {
+            if (!Queries.ContainsKey(key))
+                return;
+
+            Queries.Remove(key);
+        }
+
+        /// <summary>
         /// Gets the value of the URL query with the specified key.
         /// Keep in mind that parsed URLs will contain stringly typed query values regardless of their original type,
         /// and may require a custom retriever to return them to their original type.
@@ -109,6 +121,20 @@ namespace Urlicious
             var entry = Queries[key];
 
             return retriever != null ? retriever(entry) : (T)entry;
+        }
+
+        /// <summary>
+        /// Gets a collection of all paths specified in the URL.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<string> GetPaths()
+        {
+            var path = AbsolutePath.Remove(0, RootUrl.Length);
+
+            path = path.Remove(path.Length - QueryString.Length, QueryString.Length);
+            path = path.TrimStart('/').TrimEnd('/');
+
+            return path.Split('/');
         }
 
         /// <summary>
@@ -177,16 +203,7 @@ namespace Urlicious
                 url = url.TrimEnd('/');
 
             url += "?";
-
-            var param = Queries.ToList();
-            for (int i = 0; i < Queries.Count; i++)
-            {
-                var p = param[i];
-                url += string.Format("{0}={1}", p.Key, ProcessQuery(p.Value.ToString()));
-
-                if (i < param.Count - 1)
-                    url += "&";
-            }
+            url += QueryString;
 
             return url;
         }
@@ -272,6 +289,25 @@ namespace Urlicious
             // As we concatenate the queries onto the path later on, we'll want to remove the query from the 
             // path after we're done parsing it - otherwise we'd end up with double queries when calling ToString.
             instance.AbsolutePath = instance.AbsolutePath.Split('?')[0];
+        }
+
+        private string QueryString
+        {
+            get
+            {
+                var url = string.Empty;
+                var param = Queries.ToList();
+                for (int i = 0; i < Queries.Count; i++)
+                {
+                    var p = param[i];
+                    url += string.Format("{0}={1}", p.Key, ProcessQuery(p.Value.ToString()));
+
+                    if (i < param.Count - 1)
+                        url += "&";
+                }
+
+                return url;
+            }
         }
     }
 }

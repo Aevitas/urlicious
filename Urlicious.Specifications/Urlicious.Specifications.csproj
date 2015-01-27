@@ -49,7 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AppendPathsSpecifications.cs" />
+    <Compile Include="PathSpecifications.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="OperatorSpecifications.cs" />
     <Compile Include="ParseSpecifications.cs" />

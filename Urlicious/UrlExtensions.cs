@@ -18,6 +18,8 @@ namespace Urlicious
         /// <exception cref="System.ArgumentException">paths</exception>
         public static Url AppendPaths(this Url url, IEnumerable<string> paths)
         {
+            EnsureValidUrl(url);
+
             if (paths == null)
                 throw new ArgumentException("paths");
 
@@ -30,7 +32,7 @@ namespace Urlicious
         }
 
         /// <summary>
-        /// Appends the paths.
+        /// Appends the specified paths to the URL.
         /// </summary>
         /// <param name="url">The URL.</param>
         /// <param name="paths">The paths.</param>
@@ -38,6 +40,8 @@ namespace Urlicious
         /// <exception cref="System.ArgumentException">paths</exception>
         public static Url AppendPaths(this Url url, params string[] paths)
         {
+            EnsureValidUrl(url);
+
             if (paths == null || paths.Length == 0)
                 throw new ArgumentException("paths");
 
@@ -51,6 +55,8 @@ namespace Urlicious
         /// <returns></returns>
         public static bool IsWellFormed(this Url url)
         {
+            EnsureValidUrl(url);
+
             // Our URL should always be absolute, as it entails the "AbsolutePath" to our resource.
             return Uri.IsWellFormedUriString(url, UriKind.Absolute);
         }
